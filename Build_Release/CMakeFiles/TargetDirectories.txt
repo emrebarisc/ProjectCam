@@ -1,0 +1,3 @@
+/home/baris/Projects/ProjectCam/Build_Release/CMakeFiles/ProjectCam.dir
+/home/baris/Projects/ProjectCam/Build_Release/CMakeFiles/edit_cache.dir
+/home/baris/Projects/ProjectCam/Build_Release/CMakeFiles/rebuild_cache.dir
