@@ -12,12 +12,14 @@ public:
     TextRenderer();
     ~TextRenderer();
 
-    void DrawCharacter(int x, int y, uint8_t character, const Color& color);
-    void DrawString(int x, int y, const std::string& text, const Color& color);
+    void DrawCharacter(int x, int y, uint8_t character, const Color& color, const Color& bgColor = Color(0.f, 0.f, 0.f, 0.f));
+    void DrawString(int x, int y, const std::string& text, const Color& color, const Color& bgColor = Color(0.f, 0.f, 0.f, 0.f));
 
     void RenderOnto(std::vector<uint8_t>& subFrame, int width, int height, int xOffset, int yOffset);
 
 private:
+    void DrawBackgroundOnSpacing(int x, int y, const Color& bgColor = Color(0.f, 0.f, 0.f, 0.f));
+
     float scale_{ 2.f };
     int frameWidth_{ 280 };
     int frameHeight_{ 240 };

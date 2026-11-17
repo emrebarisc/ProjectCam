@@ -12,7 +12,7 @@ TextRenderer::~TextRenderer()
     delete[] frame_;
 }
 
-void TextRenderer::DrawCharacter(int x, int y, uint8_t character, const Color& color)
+void TextRenderer::DrawCharacter(int x, int y, uint8_t character, const Color& color, const Color& bgColor/* = Color(0.f, 0.f, 0.f, 0.f)*/)
 {
     int scaledWidth = FONT_WIDTH * scale_;
     int scaledHeight = FONT_HEIGHT * scale_;
@@ -47,25 +47,36 @@ void TextRenderer::DrawCharacter(int x, int y, uint8_t character, const Color& c
 
             uint8_t columnBits = font_8x8[character - 32][fontRowIndex];
 
+            int frameIndex = (targetY * frameWidth_ + targetX) * colorChannel_;
+            
             if (0x01 & (columnBits >> fontBitIndex))
             {
-                int frameIndex = (targetY * frameWidth_ + targetX) * colorChannel_;
-                
-                for (int c = 0; c < colorChannel_; ++c)
-                {
-                    frame_[frameIndex + c] = color[c];
-                }
+                frame_[frameIndex] = color.r;
+                frame_[frameIndex + 1] = color.g;
+                frame_[frameIndex + 2] = color.b;
+                frame_[frameIndex + 3] = color.a;
+            }
+            else if(0.f < bgColor.a)
+            {
+                frame_[frameIndex] = bgColor.r;
+                frame_[frameIndex + 1] = bgColor.g;
+                frame_[frameIndex + 2] = bgColor.b;
+                frame_[frameIndex + 3] = bgColor.a;
             }
         }
     }
 }
 
-void TextRenderer::DrawString(int x, int y, const std::string& text, const Color& color)
+void TextRenderer::DrawString(int x, int y, const std::string& text, const Color& color, const Color& bgColor/*= Color(0.f, 0.f, 0.f, 0.f)*/)
 {
     int cursorX = x;
     int cursorY = y;
-    for(char character : text)
+    
+    int characterCount = text.size();
+    
+    for(int characterIndex = 0; characterIndex < characterCount; ++characterIndex)
     {
+        char character = text.c_str()[characterIndex];
         if(character == '\n')
         {
             cursorX = x;
@@ -73,13 +84,66 @@ void TextRenderer::DrawString(int x, int y, const std::string& text, const Color
             continue;
         }
 
-        DrawCharacter(cursorX, cursorY, character, color);
+        DrawCharacter(cursorX, cursorY, character, color, bgColor);
+        
+        if(characterIndex != (characterCount - 1))
+        {
+            DrawBackgroundOnSpacing(cursorX, cursorY, bgColor);
+        }
+
         cursorX += (FONT_WIDTH + FONT_SPACING) * scale_; 
 
         if(frameWidth_ < cursorX)
         {
             cursorX = x;
             cursorY += FONT_HEIGHT * scale_;
+        }
+    }
+}
+
+void TextRenderer::DrawBackgroundOnSpacing(int x, int y, const Color& bgColor/* = Color(0.f, 0.f, 0.f, 0.f)*/)
+{
+    int startX = x + FONT_WIDTH * scale_;
+
+    int scaledSpacing = FONT_SPACING * scale_;
+    int scaledHeight = FONT_HEIGHT * scale_;
+    
+    for (int letterLine = 0; letterLine < scaledHeight; ++letterLine)
+    {
+        int targetY = y + letterLine;
+        if (targetY < 0 || frameHeight_ <= targetY)
+        {
+            continue;
+        }
+
+        for (int pixelX = 0; pixelX < scaledSpacing; ++pixelX)
+        {
+            int targetX = startX + pixelX;
+            if (targetX < 0 || frameWidth_ <= targetX)
+            {
+                continue;
+            }
+            
+            int fontRowIndex = pixelX / scale_;
+            if (FONT_WIDTH <= fontRowIndex)
+            {
+                continue;
+            }
+
+            int fontBitIndex = letterLine / scale_;
+            if (FONT_HEIGHT <= fontBitIndex)
+            {
+                continue;
+            }
+
+            int frameIndex = (targetY * frameWidth_ + targetX) * colorChannel_;
+            if(0.f < bgColor.a)
+            {
+                frame_[frameIndex] = bgColor.r;
+                frame_[frameIndex + 1] = bgColor.g;
+                frame_[frameIndex + 2] = bgColor.b;
+                frame_[frameIndex + 3] = bgColor.a;
+            }
         }
     }
 }
