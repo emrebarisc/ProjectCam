@@ -2,12 +2,9 @@
 
 #include <iostream>
 
-#include "IO/ButtonListener.h"
-
 void InputManager::Init()
 {
-    // OK button - BCM GPIO5
-    ButtonListener okButton(
+    listeners_.emplace_back(std::make_shared<ButtonListener>(
         5,
         [] {
             std::cout << "OK Single click" << std::endl;
@@ -17,10 +14,9 @@ void InputManager::Init()
         },
         [] {
             std::cout << "OK Hold" << std::endl;
-        });
+        }));
 
-    // UP button - BCM GPIO6
-    ButtonListener upButton(
+    listeners_.emplace_back(std::make_shared<ButtonListener>(
         6,
         [] {
             std::cout << "Up Single click" << std::endl;
@@ -30,10 +26,9 @@ void InputManager::Init()
         },
         [] {
             std::cout << "Up Hold" << std::endl;
-        });
+        }));
 
-    // DOWN button - BCM GPIO13
-    ButtonListener downButton(
+    listeners_.emplace_back(std::make_shared<ButtonListener>(
         13,
         [] {
             std::cout << "Down Single click" << std::endl;
@@ -43,5 +38,5 @@ void InputManager::Init()
         },
         [] {
             std::cout << "Down Hold" << std::endl;
-        });
+        }));
 }
